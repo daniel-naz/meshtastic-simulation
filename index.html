@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meshtastic Simulation</title>
+    <link rel="icon" type="image/png" href="./icon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r p-6 flex flex-col space-y-6">
+        <h2 class="text-lg font-semibold text-gray-800 border-b mt-4">
+            Simulation Settings
+        </h2>
+        <div>
+            <label for="seedInput" class="block text-sm font-medium text-gray-700 mb-2">
+                Simulation Seed
+            </label>
+            <div class="flex items-center space-x-2">
+                <input id="seedInput" type="number" min="0" max="999999" value="0"
+                    class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button id="randomizeSeedBtn" type="button"
+                    class="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition">
+                    🎲
+                </button>
+            </div>
+        </div>
+        <div>
+            <button id="generateEmptyBtn"
+                class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow">
+                Clear map
+            </button>
+        </div>
+        <div>
+            <button id="generateLocationBtn"
+                class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow">
+                Generate random map
+            </button>
+        </div>
+        <div>
+            <button id="pickLocationBtn"
+                class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow">
+                📍 Generate real world pickLocationBtn
+            </button>
+        </div>
+
+        <br>
+        <h2 class="text-lg font-semibold text-gray-800 border-b">
+            Network Settings
+        </h2>
+        <div>
+            <label for="hopsRange" class="block text-sm font-medium text-gray-700 mb-2">
+                Hops: <span id="hopsValue" class="font-semibold">5</span>
+            </label>
+            <input id="hopsRange" type="range" min="1" max="10" value="5" class="w-full" />
+        </div>
+        <div>
+            <label for="txRange" class="block text-sm font-medium text-gray-700 mb-2">
+                Transmit Power: <span id="txValue" class="font-semibold">20</span> dBm
+            </label>
+            <input id="txRange" type="range" min="10" max="30" value="20" step="0.5" class="w-full" />
+        </div>
+        <div>
+            <label for="sfRange" class="block text-sm font-medium text-gray-700 mb-2">
+                SF: <span id="sfValue" class="font-semibold">9</span>
+            </label>
+            <input id="sfRange" type="range" min="7" max="12" value="9" class="w-full" />
+        </div>
+        <div>
+            <label for="crSlider" class="block text-sm font-medium text-gray-700 mb-2">
+                Cr: <span id="crValue" class="font-semibold">0.8</span>
+            </label>
+            <input id="crSlider" type="range" min="0" max="1" value="1" class="w-full" />
+        </div>
+        <div>
+            <label for="bwSlider" class="block text-sm font-medium text-gray-700 mb-2">
+                BW: <span id="bwValue" class="font-semibold">250</span> KHz
+            </label>
+            <input id="bwSlider" type="range" min="0" max="2" step="1" value="1" class="w-full accent-blue-600" />
+            <div class="flex justify-between text-sm text-gray-500 mt-2 px-1">
+                <span>125K</span>
+                <span>250K</span>
+                <span>500K</span>
+            </div>
+        </div>
+        <div>
+            <label for="freqSlider" class="block text-sm font-medium text-gray-700 mb-2">
+                Frequency: <span id="freqValue" class="font-semibold">915</span> MHz
+            </label>
+            <input id="freqSlider" type="range" min="0" max="2" step="1" value="2" class="w-full" />
+            <div class="flex justify-between text-sm text-gray-500 mt-2 px-1">
+                <span>433M</span>
+                <span>868M</span>
+                <span>915M</span>
+            </div>
+            <p id="errorLabel" class="text-sm font-medium text-red-500"></p>
+        </div>
+        <div>
+            <label for="packetCount" class="block text-sm font-medium text-gray-700 mb-2">
+                Packet Count : <span id="packetCountValue" class="font-semibold">50</span>
+            </label>
+            <input id="packetCount" type="range" min="0" max="250" value="50" step="10" class="w-full" />
+        </div>
+        <div>
+            <label for="lossRange" class="block text-sm font-medium text-gray-700 mb-2">
+                Packet Loss Chance : <span id="lossRangeValue" class="font-semibold">0.05</span>
+            </label>
+            <input id="lossRange" type="range" min="0" max="1" value="0.05" step="0.01" class="w-full" />
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Top Bar -->
+        <nav class="flex justify-between items-center bg-white shadow px-6 py-3">
+            <!-- Left Dropdown -->
+            <div class="relative group">
+                <button
+                    class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    More
+                    <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+           
+        
+                <ul
+                    class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    <li><a id="addWallBtn" href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Add wall</a></li>
+                    <li><a id="copyLinkBtn" href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Copy Link</a></li>
+                </ul>
+            </div>
+            <div class="flex items-center space-x-4">
+                <p id="currentModeText">Click to place a node</p>
+            </div>
+            <!-- Right Dropdowns -->
+            <div class="flex items-center space-x-4">
+                <div class="relative group">
+                    <button
+                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Analyse
+                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <ul
+                        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <li><a id="trackPacketBtn" href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                Track Packet</a></li>
+                        <li><a id="findStrongBtn" href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Find
+                                Strong Connections</a></li>
+                    </ul>
+                </div>
+                <div class="relative group">
+                    <button
+                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Simulation
+                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <ul
+                        class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <li><a id="startSimBtn" href="#"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Start</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 bg-gray-100 flex items-center justify-center">
+            <canvas id="simulationCanvas" class="border border-gray-300 bg-white rounded-md shadow-lg" width="1000"
+                height="1000">
+                Your browser does not support the HTML5 canvas tag.
+            </canvas>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "geotiff": "https://esm.sh/geotiff@2.1.0"
+        }
+    }
+    </script>
+
+    <script>
+        const packetSlider = document.getElementById('packetCount');
+        const packetValueDisplay = document.getElementById('packetCountValue');
+
+        function enforceRangeAndUpdateDisplay() {
+            let value = parseInt(packetSlider.value, 10);
+
+            // Clamp the value between 1 and 250
+            if (value < 1) value = 1;
+            if (value > 250) value = 250;
+
+            // Update the slider and display
+            packetSlider.value = value;
+            packetValueDisplay.textContent = value;
+        }
+
+        // Update display and enforce range when the slider changes
+        packetSlider.addEventListener('input', enforceRangeAndUpdateDisplay);
+    </script>
+
+    <script>
+        const freqSlider = document.getElementById('freqSlider');
+        const freqValue = document.getElementById('freqValue');
+
+        const freqMap = {
+            0: 433,
+            1: 868,
+            2: 915
+        };
+
+        freqSlider.addEventListener('input', () => {
+            const val = parseInt(freqSlider.value);
+            freqValue.textContent = freqMap[val];
+        });
+    </script>
+
+    <script>
+        const crSlider = document.getElementById('crSlider');
+        const crValue = document.getElementById('crValue');
+
+        function snapScale(val) {
+            return parseFloat(val) < 0.5 ? 0 : 1;
+        }
+
+        crSlider.addEventListener('input', () => {
+            const snapped = snapScale(crSlider.value);
+            crSlider.value = snapped;
+            crValue.textContent = snapped == 0 ? 0.5 : 0.8;
+        });
+    </script>
+
+    <script>
+        const seedInput = document.getElementById('seedInput');
+        const randomizeSeedBtn = document.getElementById('randomizeSeedBtn');
+
+        randomizeSeedBtn.addEventListener('click', () => {
+            const randomSeed = Math.floor(Math.random() * 1_000_000);
+            seedInput.value = randomSeed;
+
+            seedInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        // Clamp seed input on manual input
+        seedInput.addEventListener('input', () => {
+            let val = parseInt(seedInput.value);
+            if (isNaN(val)) {
+                seedInput.value = ''; // clear if invalid
+                return;
+            }
+            if (val < 0) seedInput.value = '0';
+            else if (val > 999999) seedInput.value = '999999';
+            else seedInput.value = val.toString();
+        });
+    </script>
+
+    <script>
+        const bwSlider = document.getElementById('bwSlider');
+        const bwValue = document.getElementById('bwValue');
+        const valueMap = [125, 250, 500];
+
+        bwSlider.addEventListener('input', () => {
+            bwValue.textContent = valueMap[bwSlider.value];
+        });
+    </script>
+
+    <script>
+        const txSlider = document.getElementById('txRange');
+        const txValueDisplay = document.getElementById('txValue');
+
+        txSlider.addEventListener('input', () => {
+            txValueDisplay.textContent = txSlider.value;
+        });
+    </script>
+
+    <!-- Value Update Script -->
+    <script>
+        const sfRange = document.getElementById('sfRange');
+        const sfValue = document.getElementById('sfValue');
+        const hopsRange = document.getElementById('hopsRange');
+        const hopsValue = document.getElementById('hopsValue');
+
+        // Initialize displayed values
+        sfValue.textContent = sfRange.value;
+        hopsValue.textContent = hopsRange.value;
+
+        // Update on input
+        sfRange.addEventListener('input', () => sfValue.textContent = sfRange.value);
+        hopsRange.addEventListener('input', () => hopsValue.textContent = hopsRange.value);
+    </script>
+
+    <script>
+        const slider = document.getElementById('lossRange');
+        const display = document.getElementById('lossRangeValue');
+
+        slider.addEventListener('input', () => {
+            display.textContent = slider.value;
+        });
+    </script>
+
+    <!-- Modal overlay -->
+    <div id="mapModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-md shadow-lg w-[90%] max-w-4xl h-[80%] flex flex-col">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-4 py-2 border-b space-x-4">
+                <h2 class="text-lg font-semibold">Select Bounding Box</h2>
+                <button id="closeMapBtn"
+                    class="text-gray-500 hover:text-gray-800 text-2xl font-bold leading-none">&times;</button>
+            </div>
+
+            <!-- Map -->
+            <div id="map" class="flex-1"></div>
+
+            <!-- Bounding Box Display -->
+            <div class="flex flex-wrap justify-between items-center p-4 border-t text-sm text-gray-700 gap-2">
+                <div>
+                    <span class="block">South: <span id="bboxSouth">--</span></span>
+                    <span class="block">West: <span id="bboxWest">--</span></span>
+                    <span class="block">North: <span id="bboxNorth">--</span></span>
+                    <span class="block">East: <span id="bboxEast">--</span></span>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button id="startSelectBtn"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition text-sm">
+                        Select
+                    </button>
+                    <button id="confirmLocationBtn"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition text-sm">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./main.js" type="module"></script>
+</body>
+
+</html>
