@@ -13,23 +13,17 @@ Discrete‑event and interactive simulator for Meshtastic.
 
 The discrete‑event simulator mimics the radio section of the device software in order to understand its working. It can also be used to assess the performance of your scenario, or the scalability of the protocol.
 
-See this document for a usage guide.
-
 After a simulation, it plots the placement of nodes and time schedule for each set of overlapping messages that were sent.
 
-It can be used to analyze the network for a set of parameters. For example, these are the results of 100 simulations of 200 s with a different hop limit and number of nodes. As expected, the average number of nodes reached for each generated message increases as the hop limit increases.
-
-However, it comes at the cost of usefulness, i.e., the amount of received packets that contain a new message (not a duplicate due to rebroadcasting) out of all packets received.
+It can be used to analyze the network for a set of parameters. 
 
 ## Interactive simulator
 
-The interactive simulator uses the Linux native application of Meshtastic, i.e. the real device software, while simulating some of the hardware interfaces, including the LoRa chip. Can also be used on a Windows or macOS host with Docker.
-
-See this document for a usage guide.
+The interactive simulator of Meshtastic, i.e. the real device software, while simulating some of the hardware interfaces, including the LoRa chip.
 
 It allows for debugging multiple communicating nodes without having real devices.
 
-Furthermore, since the simulator has an “oracle view” of the network, it allows to visualize the route messages take.
+Furthermore, since the simulator has a visual of the network, it allows to view the route messages take.
 
 ## Original
 
