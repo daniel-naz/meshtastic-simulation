@@ -4,6 +4,11 @@
 
 Discrete‑event and interactive simulator for Meshtastic.
 
+## Notes
+
+- Seed '0' is empty by default - change it before generating a map.
+- While placing walls, press right click to stop.
+
 ## Discrete‑event simulator
 
 The discrete‑event simulator mimics the radio section of the device software in order to understand its working. It can also be used to assess the performance of your scenario, or the scalability of the protocol.
@@ -26,13 +31,7 @@ It allows for debugging multiple communicating nodes without having real devices
 
 Furthermore, since the simulator has an “oracle view” of the network, it allows to visualize the route messages take.
 
-## License
+## Original
 
-Part of the source code is based on the work in [1], which eventually stems from [2]. The LoRaSim library from [2] can be found [here](https://github.com/lora-simulator/LoRaSim).
+Part of the source code is based on the work in assignment.1, can be found [here](https://daniel-naz.github.io/meshtastic-sim/).
 
-This work is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
-
-## References
-
-1. S. Spinsante, L. Gioacchini and L. Scalise, “A novel experimental-based tool for the design of LoRa networks,” 2019 II Workshop on Metrology for Industry 4.0 and IoT (MetroInd4.0&IoT), 2019, pp. 317‑322, doi: 10.1109/METROI4.2019.8792833.  
-2. Martin C. Bor, Utz Roedig, Thiemo Voigt, and Juan M. Alonso, “Do LoRa Low‑Power Wide‑Area Networks Scale?”, In Proceedings of the 19th ACM International Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWiM ’16), 2016. Association for Computing Machinery, New York, NY, USA, pp. 59–67.
